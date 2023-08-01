@@ -15,7 +15,9 @@ connection.connect((err) => {
 });
 
 function createTable(callback) {
-    const query = 'CREATE TABLE IF NOT EXISTS users(username VARCHAR(30) NOT NULL, password VARCHAR(30) NOT NULL)';
+    const query = 'CREATE TABLE IF NOT EXISTS users( \
+        username VARCHAR(30) NOT NULL PRIMARY KEY, \
+        password VARCHAR(30) NOT NULL )';
     connection.query(query, (err, results) => {
         if (err) {
             console.error('Error executing query:', err.message);
@@ -27,7 +29,7 @@ function createTable(callback) {
 }
 
 function insertUser(username, password, callback) {
-    const query = 'INSERT IGNORE INTO users(username, password) VALUES(?, ?)';
+    const query = 'INSERT INTO users(username, password) VALUES(?, ?) ON DUPLICATE KEY UPDATE password=VALUES(password)';
     connection.query(query, [username, password], (err, results) => {
         if (err) {
             console.error('Error inserting:', err.message);
@@ -38,9 +40,9 @@ function insertUser(username, password, callback) {
     });
 }
 
-function queryUser(username, callback) {
-    const query = 'SELECT * FROM users WHERE username = ?';
-    connection.query(query, [username], (err, results) => {
+function queryUser(callback) {
+    const query = 'SELECT * FROM users';
+    connection.query(query, (err, results) => {
         if (err) {
             console.error('Error in query user:', err.message);
             callback(err, null);

@@ -12,13 +12,13 @@ app.listen(3000, () => {
 const db = require('./db');
 db.createTable((err, results) => {
     if (err) {
-        console.error('Error fetching data:', err.message);
+        console.error('Error create table:', err.message);
         return;
     }
-    console.log('Fetched data:', results);
+    console.log('created table:', results);
 });
 
-db.insertUser('Meinan', 'Gmn699847', (err, results) => {
+db.insertUser('user1', '1234', (err, results) => {
     if (err) {
         console.error('Error inserting:', err.message);
         return;
@@ -26,7 +26,7 @@ db.insertUser('Meinan', 'Gmn699847', (err, results) => {
     console.log('Inserting succeeded:', results);
 });
 
-db.queryUser('Meinan', (err, results) => {
+db.queryUser((err, results) => {
     if (err) {
         console.error('Error querying:', err.message);
         return;
