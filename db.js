@@ -6,6 +6,8 @@ const connection = mysql.createConnection({
     database: 'user_info'
 });
 
+// mysql -u root -p
+
 connection.connect((err) => {
     if (err) {
         console.log('Error connecting to Db:', err.message);
