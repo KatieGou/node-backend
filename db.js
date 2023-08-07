@@ -1,4 +1,5 @@
 require('dotenv').config();
+const hash_handle = require('./hash_handle');
 const mysql = require('mysql');
 const connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -17,7 +18,7 @@ connection.connect((err) => {
     console.log('Connection established');
 });
 
-// TODO: encrypt password, update insertUser (non multiple insert), user login
+// TODO: encrypt password, add id as primary key?, update insertUser (non multiple insert), user login, user choose computer, headphone etc.
 
 function createTable(callback) {
     const query = 'CREATE TABLE IF NOT EXISTS users( \
@@ -34,10 +35,11 @@ function createTable(callback) {
     });
 }
 
-function insertUser(username, password) {
+async function insertUser(username, password) {
     const query = 'INSERT INTO users(username, password) VALUES(?, ?) ON DUPLICATE KEY UPDATE password=VALUES(password)';
-    return new Promise((resolve, reject) => {
-        connection.query(query, [username, password], (err, results) => {
+    const hashedPassword = await hash_handle.hashPassword(password);
+    return new Promise((resolve, reject) => { // Promise: handle asynchronous operations more effectively
+        connection.query(query, [username, hashedPassword], (err, results) => {
             if (err) {
                 console.error('Error inserting:', err.message);
                 reject(err);
