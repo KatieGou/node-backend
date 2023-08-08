@@ -36,29 +36,37 @@ function createTable(callback) {
 }
 
 async function insertUser(username, password) {
-    const query = 'INSERT INTO users(username, password) VALUES(?, ?) ON DUPLICATE KEY UPDATE password=VALUES(password)';
-    const hashedPassword = await hash_handle.hashPassword(password);
-    return new Promise((resolve, reject) => { // Promise: handle asynchronous operations more effectively
-        connection.query(query, [username, hashedPassword], (err, results) => {
+    const duplicationMsg = 'User already exists';
+    try {
+        const existingUser = await queryUser(username);
+        if (existingUser.length > 0) {
+            // console.error('Error inserting: username already exists');
+            throw new Error(duplicationMsg);
+        }
+        const query = 'INSERT INTO users(username, password) VALUES(?, ?)';
+        const hashedPassword = await hash_handle.hashPassword(password);
+        await connection.query(query, [username, hashedPassword]);
+        // console.log('Records inserted successfully:', results.message);
+        return;
+    } catch (err) {
+        if (err.message === duplicationMsg) {
+            throw err;
+        }
+        throw new Error('Error inserting');
+    }
+}
+
+function queryUser(username) {
+    const query = 'SELECT 1 FROM users WHERE username=?';
+    return new Promise((resolve, reject) => {
+        connection.query(query, [username], (err, results) => {
             if (err) {
-                console.error('Error inserting:', err.message);
+                console.error('Error in query user:', err.message);
                 reject(err);
             } else {
                 resolve(results);
             }
         });
-    });
-}
-
-function queryUser(callback) {
-    const query = 'SELECT * FROM users';
-    connection.query(query, (err, results) => {
-        if (err) {
-            console.error('Error in query user:', err.message);
-            callback(err, null);
-            return;
-        }
-        callback(null, results);
     });
 }
 

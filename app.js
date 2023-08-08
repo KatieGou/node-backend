@@ -14,7 +14,7 @@ app.post('/register', async (req, res) => {
         res.json({message: 'Registration  succeeded'});
     } catch (err) {
         console.error('Error inserting:', err.message);
-        res.status(500).send('Error inserting');
+        res.status(500).send(`Error creating user: ${err.message}`);
     }
 });
 
