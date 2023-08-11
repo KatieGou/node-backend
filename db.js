@@ -57,7 +57,7 @@ async function insertUser(username, password) {
 }
 
 function queryUser(username) {
-    const query = 'SELECT 1 FROM users WHERE username=?';
+    const query = 'SELECT * FROM users WHERE username=?';
     return new Promise((resolve, reject) => {
         connection.query(query, [username], (err, results) => {
             if (err) {
