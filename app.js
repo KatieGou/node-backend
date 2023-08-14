@@ -30,7 +30,8 @@ app.post('/login', async (req, res) => {
         const hashedPassword = results[0].password;
         const isMatch = await hash_handle.comparePassword(password, hashedPassword);
         if (isMatch) {
-            res.json({message: 'Login succeeded'});
+            // res.json({message: 'Login succeeded'});
+            res.status(200).send('Login succeeded');
         } else {
             res.status(401).send('Wrong password');
         }
