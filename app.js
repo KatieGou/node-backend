@@ -23,15 +23,17 @@ app.post('/login', async (req, res) => {
     try {
         const {username, password} = req.body;
         const results = await db.queryUser(username);
+        // console.log('results:', results)
         if (results.length === 0) {
             res.status(401).send('User does not exist');
             return;
         }
         const hashedPassword = results[0].password;
+        // console.log('hashedPassword:', hashedPassword);
         const isMatch = await hash_handle.comparePassword(password, hashedPassword);
         if (isMatch) {
-            // res.json({message: 'Login succeeded'});
-            res.status(200).send('Login succeeded');
+            res.json(results);
+            // res.status(200).send('Login succeeded');
         } else {
             res.status(401).send('Wrong password');
         }
@@ -41,6 +43,20 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// app.post('/changePassword', async (req, res) => {});
+// app.post('/deleteUser', async (req, res) => {});
+
+app.get('/users/:userid', async (req, res) => {
+    try {
+        const userid = req.params.userid;
+        const results = await db.queryFavoriteItem(userid);
+        // console.log('results:', results);
+        res.json(results);
+    } catch (err) {
+        console.error('Error getting favorite items:', err.message);
+        res.status(500).send(`Error getting favorite items: ${err.message}`);
+    }
+});
 
 const port = 3000;
 app.listen(port, () => {

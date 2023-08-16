@@ -20,10 +20,11 @@ connection.connect((err) => {
 
 // TODO: encrypt password, add id as primary key?, update insertUser (non multiple insert), user login, user choose computer, headphone etc.
 
-function createTable(callback) {
+function createUserTable(callback) {
     const query = 'CREATE TABLE IF NOT EXISTS users( \
-        username VARCHAR(30) NOT NULL PRIMARY KEY, \
-        password VARCHAR(30) NOT NULL )';
+        user_id INT PRIMARY KEY AUTO_INCREMENT, \
+        username VARCHAR(255) NOT NULL, \
+        password VARCHAR(255) NOT NULL )';
     // password string 
     connection.query(query, (err, results) => {
         if (err) {
@@ -43,10 +44,16 @@ async function insertUser(username, password) {
             // console.error('Error inserting: username already exists');
             throw new Error(duplicationMsg);
         }
-        const query = 'INSERT INTO users(username, password) VALUES(?, ?)';
+
+        // insert into table users
+        const query_insert_user = 'INSERT INTO users(username, password) VALUES(?, ?)';
         const hashedPassword = await hash_handle.hashPassword(password);
-        await connection.query(query, [username, hashedPassword]);
-        // console.log('Records inserted successfully:', results.message);
+        await connection.query(query_insert_user, [username, hashedPassword]);
+        
+        // insert into table favorite_items
+        const newlyAddedUser = await queryUser(username);
+        const user_id = newlyAddedUser[0].user_id;
+        await insertEmptyFavoriteItem(user_id);
         return;
     } catch (err) {
         if (err.message === duplicationMsg) {
@@ -54,6 +61,20 @@ async function insertUser(username, password) {
         }
         throw new Error('Error inserting');
     }
+}
+
+function insertEmptyFavoriteItem(user_id) {
+    const query = 'INSERT INTO favorite_items(user_id) VALUES(?)';
+    return new Promise((resolve, reject) => {
+        connection.query(query, [user_id], (err, results) => {
+            if (err) {
+                console.error('Error inserting empty favorite item:', err.message);
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
 }
 
 function queryUser(username) {
@@ -82,10 +103,45 @@ function dropTable(callback) {
     });
 }
 
+function createFavoriteItemTable (callback) {
+    const query = 'CREATE TABLE IF NOT EXISTS favorite_items ( \
+        user_id INT PRIMARY KEY, \
+        favorite_fruit VARCHAR(255), \
+        favorite_vegetable VARCHAR(255), \
+        favorite_phone VARCHAR (255), \
+        favorite_computer VARCHAR (255), \
+        FOREIGN KEY (user_id) REFERENCES users(user_id) \
+        )';
+    connection.query(query, (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err.message);
+            callback(err, null);
+            return;
+        }
+        callback(null, results);
+    });
+}
+
+// check the code below. show only after authentication
+function queryFavoriteItem(user_id) {
+    const query = 'SELECT * FROM favorite_items WHERE user_id=?';
+    return new Promise((resolve, reject) => {
+        connection.query(query, [user_id], (err, results) => {
+            if (err) {
+                console.error('Error in query favorite item:', err.message);
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
 module.exports = {
     connection,
-    createTable,
+    // createUserTable,
     insertUser,
     queryUser,
-    dropTable
+    dropTable,
+    queryFavoriteItem,
 };
