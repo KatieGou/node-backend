@@ -58,6 +58,24 @@ app.get('/users/:userid', async (req, res) => {
     }
 });
 
+app.post('/users/:userid', async (req, res) => {
+    try {
+        const {user_id, favorite_fruit, favorite_vegetable, favorite_phone, favorite_computer} = req.body;
+        const favorites = {
+            'favorite_fruit': favorite_fruit,
+            'favorite_vegetable': favorite_vegetable,
+            'favorite_phone': favorite_phone,
+            'favorite_computer': favorite_computer
+        }
+        const results = await db.updateFavoriteItem(user_id, favorites);
+        // console.log('results:', results);
+        res.json(results);
+    } catch (err) {
+        console.error('Error updating favorite items:', err.message);
+        res.status(500).send(`Error updating favorite items: ${err.message}`);
+    }
+});
+
 const port = 3000;
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

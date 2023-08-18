@@ -53,7 +53,8 @@ async function insertUser(username, password) {
         // insert into table favorite_items
         const newlyAddedUser = await queryUser(username);
         const user_id = newlyAddedUser[0].user_id;
-        await insertEmptyFavoriteItem(user_id);
+        const [favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable] = ['', '', '', ''];
+        await insertEmptyFavoriteItem(user_id, favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable);
         return;
     } catch (err) {
         if (err.message === duplicationMsg) {
@@ -63,10 +64,10 @@ async function insertUser(username, password) {
     }
 }
 
-function insertEmptyFavoriteItem(user_id) {
-    const query = 'INSERT INTO favorite_items(user_id) VALUES(?)';
+function insertEmptyFavoriteItem(user_id, favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable) {
+    const query = 'INSERT INTO favorite_items(user_id, favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable) VALUES(?, ?, ?, ?, ?)';
     return new Promise((resolve, reject) => {
-        connection.query(query, [user_id], (err, results) => {
+        connection.query(query, [user_id, favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable], (err, results) => {
             if (err) {
                 console.error('Error inserting empty favorite item:', err.message);
                 reject(err);
@@ -137,11 +138,25 @@ function queryFavoriteItem(user_id) {
     });
 }
 
+function updateFavoriteItem(user_id, favorites) {
+    const query = 'UPDATE favorite_items SET favorite_computer=?, favorite_fruit=?, favorite_phone=?, favorite_vegetable=? WHERE user_id=?';
+    return new Promise((resolve, reject) => {
+        connection.query(query, [favorites.favorite_computer, favorites.favorite_fruit, favorites.favorite_phone, favorites.favorite_vegetable, user_id], (err, results) => {
+            if (err) {
+                console.error('Error in update favorite item:', err.message);
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
 module.exports = {
     connection,
-    // createUserTable,
     insertUser,
     queryUser,
     dropTable,
     queryFavoriteItem,
+    updateFavoriteItem,
 };
