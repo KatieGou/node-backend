@@ -44,6 +44,15 @@ router.post('/login', async (req, res) => {
 });
 
 // router.post('/changePassword', async (req, res) => {});
-// router.post('/deleteUser', async (req, res) => {});
+router.delete('/deleteUser', async (req, res) => {
+    try {
+        const userid = req.query.userid;
+        await db.deleteUser(userid);
+        res.json({message: 'User deleted'});
+    } catch (err) {
+        console.error('Error deleting user:', err.message);
+        res.status(500).send(`Error deleting user: ${err.message}`);
+    }
+});
 
 module.exports = router;

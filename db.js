@@ -64,6 +64,19 @@ async function insertUser(username, password) {
     }
 }
 
+async function deleteUser(user_id) {
+    try {
+        const query_delete_favorite_item = 'DELETE FROM favorite_items WHERE user_id=?';
+        await connection.query(query_delete_favorite_item, [user_id]);
+        const query_delete_user = 'DELETE FROM users WHERE user_id=?';
+        await connection.query(query_delete_user, [user_id]);
+        return;
+    } catch (err) {
+        console.error('Error deleting user:', err.message);
+        throw new Error('Error deleting user');
+    }
+}
+
 function insertEmptyFavoriteItem(user_id, favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable) {
     const query = 'INSERT INTO favorite_items(user_id, favorite_computer, favorite_fruit, favorite_phone, favorite_vegetable) VALUES(?, ?, ?, ?, ?)';
     return new Promise((resolve, reject) => {
@@ -156,6 +169,7 @@ module.exports = {
     connection,
     insertUser,
     queryUser,
+    deleteUser,
     dropTable,
     queryFavoriteItem,
     updateFavoriteItem,
